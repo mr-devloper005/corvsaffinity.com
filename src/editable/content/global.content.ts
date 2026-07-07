@@ -3,45 +3,49 @@ import { slot4BrandConfig } from '@/editable/theme/brand.config'
 export const globalContent = {
   site: {
     name: slot4BrandConfig.siteName,
-    tagline: slot4BrandConfig.tagline || 'Independent reading platform',
+    tagline: slot4BrandConfig.tagline || 'A quiet reference library',
     domain: slot4BrandConfig.domain,
     baseUrl: slot4BrandConfig.baseUrl,
   },
   nav: {
-    tagline: 'Independent reading platform',
+    tagline: 'A quiet reference library',
     primaryLinks: [
-      { label: 'Articles', href: '/articles' },
-      { label: 'Visuals', href: '/image-sharing' },
-      { label: 'Listings', href: '/listings' },
+      { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
     ],
     actions: {
-      primary: { label: 'Start exploring', href: '/' },
-      secondary: { label: 'Submit', href: '/contact' },
+      primary: { label: 'Get started', href: '/signup' },
+      secondary: { label: 'Sign in', href: '/login' },
     },
   },
   footer: {
-    tagline: 'Stories, resources, and discoverable posts',
-    description: 'A connected publishing surface for articles, visuals, listings, profiles, bookmarks, and downloadable resources.',
+    tagline: 'A slow archive of documents worth keeping.',
+    description:
+      'A calm, editorial home for the documents, reports and references we want to come back to — carefully catalogued and free to read.',
+    // Kept for the content contract test — the shell only renders the Reference
+    // Library discovery column, but the structure remains as source of truth.
     columns: [
       {
-        title: 'Explore',
-        links: [
-          { label: 'Articles', href: '/articles' },
-          { label: 'Listings', href: '/listings' },
-          { label: 'Images', href: '/image-sharing' },
-          { label: 'PDF Library', href: '/pdf' },
-        ],
+        title: 'Discover',
+        links: [{ label: 'Reference Library', href: '/pdf' }],
       },
       {
-        title: 'Site',
+        title: 'Resources',
         links: [
           { label: 'About', href: '/about' },
           { label: 'Contact', href: '/contact' },
+          { label: 'Search', href: '/search' },
+        ],
+      },
+      {
+        title: 'Account',
+        links: [
+          { label: 'Sign in', href: '/login' },
+          { label: 'Get started', href: '/signup' },
         ],
       },
     ],
-    bottomNote: 'Built for clean discovery and connected publishing.',
+    bottomNote: 'Built for quiet, purposeful reading.',
   },
   commonLabels: {
     readMore: 'Read more',
@@ -49,6 +53,6 @@ export const globalContent = {
     explore: 'Explore',
     latest: 'Latest',
     related: 'Related',
-    published: 'Published',
+    published: 'Added',
   },
 } as const
