@@ -342,13 +342,6 @@ function MapBox({ src, label }: { src: string; label: string }) {
    - Horizontal snap-rail of related entries (replaces the earlier grid)
    ============================================================ */
 
-const detailAnchors = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'preview', label: 'Preview' },
-  { id: 'about', label: 'About' },
-  { id: 'more', label: 'More' },
-]
-
 function DetailIndexRail({ items }: { items: { id: string; label: string }[] }) {
   return (
     <nav aria-label="On this page" className="grid gap-0 border-l border-[var(--tk-accent)] pl-8">
@@ -451,242 +444,76 @@ function DetailRelatedRail({
   )
 }
 
-/* ================== PDF (Reference Library) — v2 canvas ================= */
+/* ================== PDF (Reference Library) — simplified ================ */
 function PdfDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
   const fileUrl = getField(post, ['fileUrl', 'pdfUrl', 'documentUrl', 'url'])
-  const pages = getField(post, ['pages', 'pageCount'])
-  const fileSize = getField(post, ['fileSize', 'size'])
   const updated = getField(post, ['updated', 'updatedAt', 'revised'])
   const category = categoryOf(post, 'Reference')
   const filename = getField(post, ['fileName', 'filename']) || `${post.slug || 'document'}.pdf`
   const contributor = getField(post, ['author', 'contributor', 'uploadedBy']) || SITE_CONFIG.name
-  const sections = (() => {
-    const content = getContent(post)
-    if (Array.isArray(content.sections)) return content.sections.filter((s): s is string => typeof s === 'string').slice(0, 6)
-    if (Array.isArray(content.toc)) return content.toc.filter((s): s is string => typeof s === 'string').slice(0, 6)
-    return ['Introduction', 'Key concepts', 'Working examples', 'References']
-  })()
 
   return (
     <>
-      {/* ============ Section 01 — Hero canvas (split, no sidebar) ============ */}
+      {/* ============ Hero — PDF shown as the head component ============ */}
       <section id="overview" className="border-b border-[var(--editable-hairline)] bg-[var(--tk-bg)]">
         <div className={`${dc.shell.section} pt-14 sm:pt-20`}>
           <BackLink task="pdf" />
         </div>
-        <div className={`${dc.shell.section} grid gap-16 pb-20 pt-10 lg:grid-cols-[1.15fr_0.85fr] lg:pb-28 lg:pt-14`}>
-          {/* Left — enormous typographic artifact (no photography) */}
-          <EditableReveal index={0} className="order-2 lg:order-1">
-            <div className="relative flex h-full min-h-[520px] items-end overflow-hidden rounded-[0.4em] border border-[var(--editable-hairline)] bg-[var(--tk-raised)] p-10 sm:min-h-[620px]">
-              <div className="pointer-events-none absolute inset-0 opacity-[0.06]">
-                <div className="editable-display absolute -left-6 -top-10 text-[18rem] leading-none tracking-[-0.06em] text-[var(--tk-text)]">
-                  .pdf
-                </div>
-              </div>
-              <div className="relative flex w-full flex-col gap-8">
-                <div className="flex items-baseline justify-between">
-                  <span className={dc.badge.accentPill}>{PDF_LABEL}</span>
-                  <span className="editable-label text-[var(--tk-muted)]">{category}</span>
-                </div>
-                <div>
-                  <p className="editable-display mt-6 max-w-md break-words text-[1.75rem] font-medium leading-[1.15] tracking-[-0.02em] text-[var(--tk-text)]">
-                    {filename}
-                  </p>
-                </div>
-              </div>
+        <div className={`${dc.shell.section} pb-16 pt-8 sm:pb-20`}>
+          <EditableReveal index={0} className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={dc.badge.accentPill}>{PDF_LABEL}</span>
+              <span className="editable-label text-[var(--tk-muted)]">{category}</span>
             </div>
+            <h1 className="editable-display text-balance text-[2.25rem] font-medium leading-[1.05] tracking-[-0.03em] sm:text-[3rem] lg:text-[3.5rem]">
+              {post.title}
+            </h1>
+            {leadText(post) ? (
+              <p className="max-w-2xl text-[1.05rem] leading-[1.55] text-[var(--tk-muted)]">{leadText(post)}</p>
+            ) : null}
           </EditableReveal>
 
-          {/* Right — kicker + huge h1 + lead + index rail */}
-          <div className="order-1 flex flex-col justify-between lg:order-2">
-            <div>
-              <EditableReveal index={0}>
-                <p className="editable-label text-[var(--tk-accent)]">{PDF_LABEL} · Entry</p>
-              </EditableReveal>
-              <EditableReveal index={1} className="mt-6">
-                <h1 className="editable-display text-[2.75rem] font-medium leading-[0.98] tracking-[-0.035em] text-[var(--tk-text)] sm:text-[3.75rem] lg:text-[4.75rem]">
-                  {post.title}
-                </h1>
-              </EditableReveal>
-              {leadText(post) ? (
-                <EditableReveal index={2} className="mt-8">
-                  <p className="max-w-xl text-[1.15rem] leading-[1.55] text-[var(--tk-muted)]">{leadText(post)}</p>
-                </EditableReveal>
-              ) : null}
-            </div>
-            <EditableReveal index={3} className="mt-12">
-              <p className="editable-label mb-4 text-[var(--tk-muted)]">On this page</p>
-              <DetailIndexRail items={detailAnchors} />
-            </EditableReveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ Section 02 — Inverted dark metadata strip ============ */}
-      <DetailMetaBar
-        items={[
-        
-          { label: 'Format', value: 'PDF' },
-          { label: 'Access', value: 'Open · Free' },
-          { label: 'Contributor', value: contributor },
-        ]}
-      />
-
-      {/* ============ Section 03 — Actions row ============ */}
-      {fileUrl ? (
-        <section className={`${dc.shell.section} py-12`}>
-          <EditableReveal index={0} className="flex flex-wrap items-center justify-between gap-6">
-            <div className="flex flex-wrap gap-3">
-              <a href={fileUrl} target="_blank" rel="noreferrer" className={dc.button.primary}>
-                Download <Download className="h-4 w-4" />
-              </a>
-              <a href={fileUrl} target="_blank" rel="noreferrer" className={dc.button.secondary}>
-                Open in new tab <ExternalLink className="h-4 w-4" />
-              </a>
-            </div>
-            <span className="editable-label text-[var(--tk-muted)]">
-              Free, no account · {filename}
-            </span>
-          </EditableReveal>
-        </section>
-      ) : null}
-
-      {/* ============ Section 04 — Full-width preview ============ */}
-      {fileUrl ? (
-        <section id="preview" className="bg-[var(--tk-bg)]">
-          <div className={`${dc.shell.section} pb-24 pt-8 sm:pb-32`}>
-            <EditableReveal index={0} className="mb-8 flex items-baseline justify-between border-b border-[var(--editable-hairline)] pb-4">
-              <span className="editable-label text-[var(--tk-accent)]">02 · Preview</span>
-              <span className="editable-label text-[var(--tk-muted)]">{filename}</span>
-            </EditableReveal>
-            <EditableReveal index={1}>
+          {fileUrl ? (
+            <EditableReveal index={1} className="mt-10">
               <iframe
                 src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=0`}
                 title={post.title}
-                className="h-[85vh] w-full rounded-[0.4em] border border-[var(--editable-hairline)] bg-[var(--tk-raised)]"
+                className="h-[80vh] w-full rounded-[0.4em] border border-[var(--editable-hairline)] bg-[var(--tk-raised)]"
               />
-            </EditableReveal>
-          </div>
-        </section>
-      ) : null}
-
-      {/* ============ Section 05 — Asymmetric body (anchored) ============ */}
-      <section id="about" className="bg-[var(--tk-raised)]">
-        <div className={`${dc.shell.section} py-24 sm:py-32`}>
-          <EditableReveal index={0} className="mb-16 flex items-baseline justify-between border-b border-[var(--editable-hairline)] pb-4">
-            <span className="editable-label text-[var(--tk-accent)]">03 · About</span>
-            <span className="editable-label text-[var(--tk-muted)]">Reading time varies</span>
-          </EditableReveal>
-          <div className="grid gap-16 lg:grid-cols-[0.28fr_0.72fr]">
-            <EditableReveal index={0}>
-              <h2 className="editable-display text-[2rem] font-medium leading-[1.1] tracking-[-0.025em] text-[var(--tk-text)] lg:text-[2.5rem]">
-                Inside this reference
-              </h2>
-              {post.tags?.length ? (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {post.tags.slice(0, 6).map((tag) => (
-                    <span key={tag} className={dc.badge.pill}>{tag}</span>
-                  ))}
-                </div>
-              ) : null}
-              <ul className="mt-10 space-y-3 border-t border-[var(--editable-hairline)] pt-6 text-[0.9rem] leading-[1.55] text-[var(--tk-text)]">
-                {sections.map((section, i) => (
-                  <li key={`${section}-${i}`} className="flex items-start gap-3">
-                    <span className="editable-label mt-0.5 shrink-0 text-[var(--tk-accent)]">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span>{section}</span>
-                  </li>
-                ))}
-              </ul>
-            </EditableReveal>
-            <EditableReveal index={1}>
-              {leadText(post) ? (
-                <blockquote className="editable-display border-l-2 border-[var(--tk-accent)] pl-8 text-[1.6rem] font-medium leading-[1.35] tracking-[-0.02em] text-[var(--tk-text)]">
-                  {leadText(post)}
-                </blockquote>
-              ) : null}
-              <BodyContent post={post} />
-            </EditableReveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ============ Section 06 — Inline modules row (3 columns) ============ */}
-      <section className={`${dc.shell.section} py-20 sm:py-24`}>
-        <EditableReveal index={0} className="mb-10">
-          <p className="editable-label text-[var(--tk-accent)]">Reference dossier</p>
-        </EditableReveal>
-        <div className="grid gap-6 md:grid-cols-3">
-          <EditableReveal index={0}>
-            <DetailModuleCard
-              eyebrow="Identity"
-              title="Reference file"
-              footer={
-                fileUrl ? (
-                  <a href={fileUrl} target="_blank" rel="noreferrer" className={`${dc.button.primary} w-full`}>
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap gap-3">
+                  <a href={fileUrl} target="_blank" rel="noreferrer" className={dc.button.primary}>
                     Download <Download className="h-4 w-4" />
                   </a>
-                ) : null
-              }
-            >
-              <div className="editable-display flex h-32 w-full items-end justify-center rounded-[0.2em] bg-[var(--tk-raised)] pb-4">
-                <div className="flex flex-col items-center gap-1">
-                  <span className="text-[2.5rem] leading-none tracking-[-0.03em] text-[var(--tk-text)]">.pdf</span>
-                  <span className="editable-label text-[var(--tk-muted)]">Open format</span>
+                  <a href={fileUrl} target="_blank" rel="noreferrer" className={dc.button.secondary}>
+                    Open in new tab <ExternalLink className="h-4 w-4" />
+                  </a>
                 </div>
+                <span className="editable-label text-[var(--tk-muted)]">{filename}</span>
               </div>
-              <p className="editable-label mt-6 truncate text-[var(--tk-text)]">{filename}</p>
-            </DetailModuleCard>
-          </EditableReveal>
-
-          <EditableReveal index={1}>
-            <DetailModuleCard eyebrow="Cataloguing" title="At a glance">
-              <dl className="grid gap-4 text-[0.9rem]">
-                <FactRow label="Category" value={category} />
-                <FactRow label="Contributor" value={contributor} />
-                {updated ? <FactRow label="Updated" value={updated} /> : null}
-              </dl>
-            </DetailModuleCard>
-          </EditableReveal>
-
-          <EditableReveal index={2}>
-            <DetailModuleCard eyebrow="Trust" title="Why this stays online">
-              <ul className="grid gap-4 text-[0.9rem]">
-                <TrustRow icon={ShieldCheck} label="Open access, no walls" />
-                <TrustRow icon={CheckCircle2} label="Original file, unmodified" />
-                <TrustRow icon={Sparkles} label={`Kept in the ${PDF_LABEL}`} />
-              </ul>
-            </DetailModuleCard>
-          </EditableReveal>
+            </EditableReveal>
+          ) : null}
         </div>
       </section>
 
-      {/* ============ Section 07 — Repeated CTA (dark band) ============ */}
-      {fileUrl ? (
-        <section className="bg-[var(--slot4-dark-bg)] text-[var(--slot4-dark-text)]">
-          <div className={`${dc.shell.section} flex flex-col items-start gap-8 py-20 lg:flex-row lg:items-center lg:justify-between lg:py-24`}>
-            <EditableReveal index={0}>
-              <p className="editable-label text-[var(--slot4-accent-soft)]">Take it with you</p>
-              <p className="editable-display mt-6 max-w-2xl text-[2rem] font-medium leading-[1.1] tracking-[-0.025em] text-white sm:text-[2.75rem]">
-                Take the full file with you to read later.
-              </p>
-            </EditableReveal>
-            <EditableReveal index={1}>
-              <a href={fileUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[var(--slot4-accent)] px-8 py-4 text-sm font-medium text-white transition duration-500 hover:bg-white hover:text-[var(--slot4-page-text)]">
-                Download file <Download className="h-4 w-4" />
-              </a>
-            </EditableReveal>
-          </div>
-        </section>
-      ) : null}
+      {/* ============ Metadata strip ============ */}
+      <DetailMetaBar
+        items={[
+          { label: 'Category', value: category },
+          { label: 'Format', value: 'PDF' },
+          { label: 'Contributor', value: contributor },
+          ...(updated ? [{ label: 'Updated', value: updated }] : []),
+        ]}
+      />
 
-      {/* ============ Section 08 — Article-bottom ad ============ */}
-      <section className={`${dc.shell.section} py-12`}>
-        <Ads slot="article-bottom" size={pickRandom(getSlotSizes('article-bottom'))} showLabel className="mx-auto w-full" />
+      {/* ============ Body ============ */}
+      <section id="about" className={`${dc.shell.section} py-20 sm:py-24`}>
+        <EditableReveal index={0} className="mx-auto max-w-3xl">
+          <BodyContent post={post} />
+        </EditableReveal>
       </section>
 
-      {/* ============ Section 09 — Related horizontal snap-rail ============ */}
+      {/* ============ Related horizontal snap-rail ============ */}
       <DetailRelatedRail
         eyebrow="More from the archive"
         title={`Other entries in the ${PDF_LABEL.toLowerCase()}`}
@@ -694,15 +521,6 @@ function PdfDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
         items={related}
       />
     </>
-  )
-}
-
-function FactRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4">
-      <dt className="editable-label text-[var(--tk-muted)]">{label}</dt>
-      <dd className="text-right text-[0.9rem] font-medium text-[var(--tk-text)]">{value}</dd>
-    </div>
   )
 }
 
